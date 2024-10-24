@@ -71,8 +71,8 @@ team_t team = {
 
 static void *coalesce(void *bp) {
 
-  size_t prev_alloc = GET_ALLOC(PREV_BLKP(bp));
-  size_t next_alloc = GET_ALLOC(PREV_BLKP(bp));
+  size_t prev_alloc = GET_ALLOC(FTRP(PREV_BLKP(bp)));
+  size_t next_alloc = GET_ALLOC(HDRP(NEXT_BLKP(bp)));
   size_t size = GET_SIZE(HDRP(bp));
 
   /*Case 1*/
@@ -225,6 +225,8 @@ void *mm_realloc(void *ptr, size_t size) {
   if (newptr == NULL)
     return NULL;
   // copySize = *(size_t *)((char *)oldptr - SIZE_T_SIZE);
+  //-> SIZE_T_SIZE 는 8(64bit system) 이다. 원래 헤드를 가리킬라면, bp에서 4만큼
+  //빼주어야하는데, 여기서는 8만큼 빼주고 있다. 따라서 잘못된 참조가 발생한다.
   copySize = GET_SIZE(HDRP(oldptr));
   if (size < copySize)
     copySize = size;
